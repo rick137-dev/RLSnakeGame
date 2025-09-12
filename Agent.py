@@ -1,7 +1,13 @@
 from abc import ABC, abstractmethod
 import numpy as np
 
-#The 4 actions, move LEFT, RIGHT, UP DOWN are classified using 0,1,2,3
+"""
+The movement directions, and action mappings, are:
+    - 0 is UP
+    - 1 is RIGHT
+    - 2 is DOWN
+    - 3 is LEFT
+"""
 
 class Agent(ABC):
 
