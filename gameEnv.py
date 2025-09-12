@@ -83,7 +83,7 @@ class SnakeEnvironment:
         positions = self.get_free_positions()
         if positions is None or len(positions)==0:
             return False
-        rand_index = self.rng.random.randint(0, len(positions) )
+        rand_index = self.rng.integers(len(positions) )
         new_fruit = positions[rand_index]
         position_i, position_j = new_fruit
         self.fruit_position = new_fruit
@@ -107,10 +107,11 @@ class SnakeEnvironment:
         self.movement_directions = direction_map[action]
         di, dj = self.movement_directions
         current_i , current_j = self.head_position
-        new_i , new_j = (current_i + di)%15 , (current_j + dj)%15
+        new_i , new_j = (current_i + di)%BOARD_SIZE , (current_j + dj)%BOARD_SIZE
 
 
         current_reward =0
+        ate_fruit = False
         self.current_steps += 1
         current_reward += self.step_reward
         self_intersect = False
@@ -140,9 +141,7 @@ class SnakeEnvironment:
 
 
         if self.board[new_i][new_j] == 2:
-            current_reward += 1
-            self.growing += 1
-            self.set_fruit()
+            ate_fruit = True
 
         if self_intersect == False and truncated == False:
             new_head_position = new_i , new_j
@@ -153,11 +152,48 @@ class SnakeEnvironment:
             else:
                 self.growing -= 1
 
+        if ate_fruit is True:
+            current_reward += 1
+            self.growing += 1
+            self.set_fruit()
 
-        return current_reward, self.current_steps, truncated, self_intersect
+        return current_reward, self.current_steps, truncated, self_intersect, ate_fruit
 
-    def record_episode(self):
-        return None
+    def record_episode(self,agent):
+        truncated = False
+        self_intersect = False
+        self.reset()
+        total_reward =0
+        actions_taken = []
+        rewards = []
+        fruit_eaten = 0
+
+        board_history = []
+
+        while truncated is False and self_intersect is False:
+            action = agent.act(self)
+            actions_taken.append(action)
+            temp_reward , _ , truncated , self_intersect, ate_fruit = self.step(action)
+            rewards.append(temp_reward)
+            total_reward += temp_reward
+            board_history.append(self.board)
+            if ate_fruit:
+                fruit_eaten+=1
+
+
+        return_dict = {
+            "total_return" :total_reward,
+            "self_intersected" : self_intersect,
+            "truncated" : truncated,
+            "rewards" : rewards,
+            "total_fruit_eaten" : fruit_eaten,
+            "actions_taken" : actions_taken,
+            "board_history" : board_history
+
+        }
+
+
+        return return_dict
 
 
 
