@@ -1,4 +1,5 @@
-import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 """
@@ -6,5 +7,9 @@ Visualizer class will store all methods relating to visualizations
 """
 class Visualizer:
 
-    def visualize_episode(self, episode):
+    @staticmethod
+    def visualize_episode(matrix, filename):
         pass
+
+
+
