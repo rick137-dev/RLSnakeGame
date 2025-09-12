@@ -38,7 +38,11 @@ class SnakeEnvironment:
 
     def __init__(self,fruit_spawn_seed=None, step_reward = 0.01, step_limit = 2000):
         self.fruit_spawn_seed = fruit_spawn_seed
-        self.rng = None
+        if self.fruit_spawn_seed is not None:
+            self.rng =  np.random.default_rng(self.fruit_spawn_seed)
+        else:
+            self.rng = np.random.default_rng()
+
         self.board = None
         self.head_position = (None,None)
         self.movement_directions = (None,None)
@@ -53,10 +57,6 @@ class SnakeEnvironment:
 
 
     def reset(self):
-        if self.fruit_spawn_seed is not None:
-            self.rng =  np.random.default_rng(self.fruit_spawn_seed)
-        else:
-            self.rng = np.random.default_rng()
 
 
         self.board = np.zeros((BOARD_SIZE,BOARD_SIZE),dtype=np.int8)
@@ -147,15 +147,17 @@ class SnakeEnvironment:
             new_head_position = new_i , new_j
             self.set_new_snake_head(new_head_position)
 
+            if ate_fruit is True:
+                current_reward += 1
+                self.growing += 1
+                self.set_fruit()
+
             if self.growing ==0:
                 self.remove_snake_end()
             else:
                 self.growing -= 1
 
-        if ate_fruit is True:
-            current_reward += 1
-            self.growing += 1
-            self.set_fruit()
+
 
         return current_reward, self.current_steps, truncated, self_intersect, ate_fruit
 
@@ -169,6 +171,7 @@ class SnakeEnvironment:
         fruit_eaten = 0
 
         board_history = []
+        fruit_eat_history = []
 
         while truncated is False and self_intersect is False:
             action = agent.act(self)
@@ -176,7 +179,8 @@ class SnakeEnvironment:
             temp_reward , _ , truncated , self_intersect, ate_fruit = self.step(action)
             rewards.append(temp_reward)
             total_reward += temp_reward
-            board_history.append(self.board)
+            board_history.append(self.board.copy())
+            fruit_eat_history.append(ate_fruit)
             if ate_fruit:
                 fruit_eaten+=1
 
@@ -188,7 +192,10 @@ class SnakeEnvironment:
             "rewards" : rewards,
             "total_fruit_eaten" : fruit_eaten,
             "actions_taken" : actions_taken,
-            "board_history" : board_history
+            "total_steps" : self.current_steps,
+            "max_steps" : self.step_limit,
+            "board_history" : board_history,
+            "fruit_eaten_history":fruit_eat_history
 
         }
 
