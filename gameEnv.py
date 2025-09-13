@@ -18,8 +18,7 @@ The movement directions, and action mappings, are:
     
     
 The reward is +1 for eating fruit, -2 for death, and +alpha for every step.
-Initial position of the snake head is in the centre, and the initial direction of movement is nowhere, thus allowing 
-the player or agent to make the first move. 
+Initial position of the snake head is in the centre, and the initial direction of movement is to the right
     
 """
 
@@ -29,6 +28,14 @@ direction_map = {
                 1: (0,1),
                 2: (1,0),
                 3 : (0,-1)
+
+}
+
+inverse_direction_map ={
+                (-1,0):0,
+                (0,1):1,
+                (1,0):2,
+                (0,-1):3
 
 }
 
@@ -43,6 +50,7 @@ class SnakeEnvironment:
         else:
             self.rng = np.random.default_rng()
 
+        self.board_size = BOARD_SIZE
         self.board = None
         self.head_position = (None,None)
         self.movement_directions = (None,None)
@@ -58,13 +66,12 @@ class SnakeEnvironment:
 
     def reset(self):
 
-
         self.board = np.zeros((BOARD_SIZE,BOARD_SIZE),dtype=np.int8)
         new_head_position = (BOARD_SIZE//2,BOARD_SIZE//2)
         self.growing = 0
         self.snake_body_deque = deque()
         self.set_new_snake_head(new_head_position)
-        self.movement_directions = (0,0)
+        self.movement_directions = direction_map[1] #Right
         self.current_steps =0
         self.set_fruit()
 
