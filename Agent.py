@@ -9,6 +9,9 @@ The movement directions, and action mappings, are:
     - 3 is LEFT
 """
 
+REINFORCE_CHECKPOINT = r"REINFORCE_CHECKPOINTS"
+
+
 class Agent(ABC):
 
     @abstractmethod
@@ -28,3 +31,11 @@ class RandomAgent(Agent):
 
     def act(self,env):
         return np.random.randint(0,3)
+
+
+class ReinforceAgent(Agent):
+
+    def __init__(self,):
+        pass
+
+
