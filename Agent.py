@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 import numpy as np
+from Observer import Observer
+import os
+
 
 """
 The movement directions, and action mappings, are:
@@ -44,6 +47,12 @@ class RandomAgent(Agent):
 class ReinforceAgent(Agent):
 
     def __init__(self,):
+        pass
+
+    def observe(self, env):
+        return Observer.encode_1024(env)
+
+    def act(self,env):
         pass
 
 
