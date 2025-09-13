@@ -25,12 +25,20 @@ class Agent(ABC):
 
 
 class RandomAgent(Agent):
+    def __init__(self, seed= None):
+        self.seed = seed
+        if self.seed:
+            self.rng = np.random.default_rng(self.seed)
+        else:
+            self.rng = np.random.default_rng()
+
+
 
     def observe(self,env):
         return env
 
     def act(self,env):
-        return np.random.randint(0,3)
+        return self.rng.integers(4)
 
 
 class ReinforceAgent(Agent):
