@@ -5,6 +5,8 @@ import numpy as np
 import imageio
 from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
+
+
 """
 Visualizer class stores all methods relating to visualizations
 """
