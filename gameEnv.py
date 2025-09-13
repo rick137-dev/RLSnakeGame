@@ -83,7 +83,7 @@ class SnakeEnvironment:
         positions = self.get_free_positions()
         if positions is None or len(positions)==0:
             return False
-        rand_index = self.rng.integers(len(positions) )
+        rand_index = self.rng.integers(len(positions))
         new_fruit = positions[rand_index]
         position_i, position_j = new_fruit
         self.fruit_position = new_fruit
