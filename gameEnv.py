@@ -169,10 +169,17 @@ class SnakeEnvironment:
         actions_taken = []
         rewards = []
         fruit_eaten = 0
-
+        head_positions = []
         board_history = []
         fruit_eat_history = []
 
+
+
+        head_positions.append(self.head_position)
+        board_history.append(self.board.copy())
+
+
+        #The head positions and board is duplicated at the end, since head is not changed if it's not a valid move
         while truncated is False and self_intersect is False:
             action = agent.act(self)
             actions_taken.append(action)
@@ -181,6 +188,7 @@ class SnakeEnvironment:
             total_reward += temp_reward
             board_history.append(self.board.copy())
             fruit_eat_history.append(ate_fruit)
+            head_positions.append(self.head_position)
             if ate_fruit:
                 fruit_eaten+=1
 
@@ -195,7 +203,8 @@ class SnakeEnvironment:
             "total_steps" : self.current_steps,
             "max_steps" : self.step_limit,
             "board_history" : board_history,
-            "fruit_eaten_history":fruit_eat_history
+            "fruit_eaten_history":fruit_eat_history,
+            "head_positions":head_positions
 
         }
 
