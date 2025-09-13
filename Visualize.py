@@ -1,8 +1,10 @@
-import matplotlib.pyplot as plt
-import numpy as np
-import time
-import imageio
 
+
+import numpy as np
+
+import imageio
+from matplotlib.animation import FuncAnimation
+import matplotlib.pyplot as plt
 """
 Visualizer class stores all methods relating to visualizations
 """
@@ -48,19 +50,27 @@ class Visualizer:
 
 
     @staticmethod
-    def visualize_episode(episode, fps = 5, save_local = False):
+    def visualize_episode(episode, fps=5, save_local=False):
         images = Visualizer.convert_to_image_list(episode)
-        plt.ion()
-        fig, ax = plt.subplots()
+
+        fig, ax = plt.subplots(num="Episode")
         im = ax.imshow(images[0], interpolation="nearest")
         ax.axis("off")
-        for frame in images:
-            im.set_data(frame)
-            plt.draw()
-            plt.pause(1.0 / fps)
 
-        plt.ioff()
+        def update(i):
+            im.set_data(images[i])
+            return (im,)
+
+        animation = FuncAnimation(fig, update, frames=len(images),
+                             interval=1000/fps, blit=True, repeat=False)
+
+        if save_local:
+            frames_uint8 = [(np.clip(img * 255, 0, 255)).astype(np.uint8) for img in images]
+            imageio.mimsave("episode_animation.gif", frames_uint8, duration=1 / fps)
+
         plt.show()
+        plt.close(fig)
+        return animation
 
 
 
