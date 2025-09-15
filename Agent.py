@@ -12,7 +12,7 @@ The movement directions, and action mappings, are:
     - 3 is LEFT
 """
 
-REINFORCE_CHECKPOINT = r"REINFORCE_CHECKPOINTS"
+
 
 
 class Agent(ABC):
@@ -35,8 +35,6 @@ class RandomAgent(Agent):
         else:
             self.rng = np.random.default_rng()
 
-
-
     def observe(self,env):
         return env
 
@@ -46,7 +44,17 @@ class RandomAgent(Agent):
 
 class ReinforceAgent(Agent):
 
-    def __init__(self,):
+    def __init__(self,learning_rate = 0.01, discount_factor = 0.9, REINFORCE_CHECKPOINT = r"REINFORCE_CHECKPOINTS" ):
+        self.learning_rate = learning_rate
+        self.discount_factor = discount_factor
+        self.REINFORCE_CHECKPOINT = REINFORCE_CHECKPOINT
+        self.training_flag = False
+
+    def set_training_flag(self, flag):
+        self.training_flag = flag
+
+
+    def train(self, number_of_episodes):
         pass
 
     def observe(self, env):
