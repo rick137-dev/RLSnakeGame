@@ -1,5 +1,6 @@
 import numpy as np
 from collections import deque
+import copy
 
 """"
 Environment is  15x15 grid with toroidal shape, which means as the snake moves across one side
