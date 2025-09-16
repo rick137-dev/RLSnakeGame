@@ -4,8 +4,8 @@ import numpy as np
 from Observer import Observer
 import os
 from joblib import dump, load
-
 from gameEnv import SnakeEnvironment
+import time
 
 """
 The movement directions, and action mappings, are:
@@ -57,7 +57,7 @@ The Tabular Reinforce always has 1 H table stored on the disk, which is the best
 
 class TabularReinforceAgent(Agent):
 
-    def __init__(self,learning_rate = 0.01, discount_factor = 0.9,number_of_states = 1024 ,evaluation_episodes = 100,seed = None,  REINFORCE_CHECKPOINT = r"REINFORCE_CHECKPOINTS"):
+    def __init__(self,learning_rate = 0.01, discount_factor = 0.9,number_of_states = 1024 ,evaluation_episodes = 100,seed = None,print_statements = False,  REINFORCE_CHECKPOINT = r"REINFORCE_CHECKPOINTS"):
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.REINFORCE_CHECKPOINT = REINFORCE_CHECKPOINT
@@ -66,6 +66,7 @@ class TabularReinforceAgent(Agent):
         self.H_Version = None
         self.evaluation_episodes = evaluation_episodes
         self.seed = seed
+        self.print_statements = print_statements
 
         if self.seed is not None:
             self.rng = np.random.default_rng(self.seed)
@@ -134,12 +135,13 @@ class TabularReinforceAgent(Agent):
         training_steps_done =0
         best_evaluation_reward = self.evaluate()
 
+        start_time = time.time()
+
         for current_iteration in range(number_of_episodes):
             return_dict = env.record_episode(agent = self)
             rewards = return_dict["rewards"]
             env_history = return_dict["total_environment_history"]
             actions = return_dict["actions_taken"]
-
 
             total_discounted_reward = self.get_discounted_return(rewards)
             accumulated_previous_reward = 0
@@ -165,13 +167,17 @@ class TabularReinforceAgent(Agent):
                 evaluation_rewards.append(eval_reward)
                 evaluation_durations.append(return_dict["total_steps"])
 
+                if self.print_statements:
+                    print("Current Iteration is " + str(current_iteration)+" and bext reward value seen so far is " + str(best_evaluation_reward))
                 if eval_reward > best_evaluation_reward:
                     best_evaluation_reward = eval_reward
                     self.H_Version+=1
                     self.save_H_table()
 
-
+        end_time = time.time()
         self.set_training_flag(original_flag)
+        time_took = end_time - start_time
+        print("Training completed, current iteration of H is " + str(self.H_Version) + " and the program took "+str(time_took)+ " seconds to run")
         return evaluation_rewards , evaluation_durations , self.discount_factor, self.learning_rate, training_steps_done, best_evaluation_reward
 
 
