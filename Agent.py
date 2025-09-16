@@ -15,10 +15,7 @@ The movement directions, and action mappings, are:
     - 3 is LEFT
 """
 
-"""
-NOTE: For REINFORCE Agent, during training it's important to use an env without a seed, otherwise the agent will train on the same sequence of fruit positions
-During evaluation you can input a specific seed
-"""
+
 
 NUM_ACTIONS = 4
 
@@ -50,6 +47,14 @@ class RandomAgent(Agent):
         return self.rng.integers(NUM_ACTIONS)
 
 
+
+"""
+NOTE: For REINFORCE Agent, during training it's important to use an env without a seed, otherwise the agent will train on the same sequence of fruit positions
+During evaluation you can input a specific seed to reproduce results.
+
+The Tabular Reinforce always has 1 H table stored on the disk, which is the best performing policy currently found
+"""
+
 class TabularReinforceAgent(Agent):
 
     def __init__(self,learning_rate = 0.01, discount_factor = 0.9,number_of_states = 1024 ,evaluation_episodes = 100,seed = None,  REINFORCE_CHECKPOINT = r"REINFORCE_CHECKPOINTS"):
@@ -66,6 +71,7 @@ class TabularReinforceAgent(Agent):
             self.rng = np.random.default_rng(self.seed)
         else:
             self.rng = np.random.default_rng()
+
 
         if os.path.isdir(os.path.join(os.getcwd(), self.REINFORCE_CHECKPOINT)):
             self.set_H_table()
@@ -87,6 +93,7 @@ class TabularReinforceAgent(Agent):
             os.remove(filename)
         new_filename = "H_" + str(self.H_Version) + ".joblib"
         new_filename = os.path.join(self.REINFORCE_CHECKPOINT,new_filename)
+        dump(self.H,new_filename)
         dump(self.H,new_filename)
 
     def set_H_table(self):
@@ -154,7 +161,7 @@ class TabularReinforceAgent(Agent):
 
 
             if (current_iteration+1) % checkpoint_iteration ==0:
-                eval_reward = self.evaluate(env)
+                eval_reward = self.evaluate()
                 evaluation_rewards.append(eval_reward)
                 evaluation_durations.append(return_dict["total_steps"])
 
