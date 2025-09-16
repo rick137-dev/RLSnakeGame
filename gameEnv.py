@@ -179,11 +179,12 @@ class SnakeEnvironment:
         head_positions = []
         board_history = []
         fruit_eat_history = []
-
+        total_environment_history = []
 
 
         head_positions.append(self.head_position)
         board_history.append(self.board.copy())
+        total_environment_history.append(copy.deepcopy(self))
 
 
         #The head positions and board is duplicated at the end, since head is not changed if it's not a valid move
@@ -194,6 +195,8 @@ class SnakeEnvironment:
             rewards.append(temp_reward)
             total_reward += temp_reward
             board_history.append(self.board.copy())
+            total_environment_history.append(copy.deepcopy(self))
+
             fruit_eat_history.append(ate_fruit)
             head_positions.append(self.head_position)
             if ate_fruit:
@@ -211,7 +214,8 @@ class SnakeEnvironment:
             "max_steps" : self.step_limit,
             "board_history" : board_history,
             "fruit_eaten_history":fruit_eat_history,
-            "head_positions":head_positions
+            "head_positions":head_positions,
+            "total_environment_history" : total_environment_history
 
         }
 
