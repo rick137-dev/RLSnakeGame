@@ -57,7 +57,7 @@ The Tabular Reinforce always has 1 H table stored on the disk, which is the best
 
 class TabularReinforceAgent(Agent):
 
-    def __init__(self,learning_rate = 0.01, discount_factor = 0.9,number_of_states = 1024 ,evaluation_episodes = 100,seed = None,print_statements = False,  REINFORCE_CHECKPOINT = r"REINFORCE_CHECKPOINTS"):
+    def __init__(self,learning_rate = 0.01, discount_factor = 0.9,number_of_states = 1024 ,evaluation_episodes = 100,evaluation_episode_max_length = 2000, seed = None,  REINFORCE_CHECKPOINT = r"REINFORCE_CHECKPOINTS"):
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.REINFORCE_CHECKPOINT = REINFORCE_CHECKPOINT
@@ -66,7 +66,7 @@ class TabularReinforceAgent(Agent):
         self.H_Version = None
         self.evaluation_episodes = evaluation_episodes
         self.seed = seed
-        self.print_statements = print_statements
+        self.evaluation_episode_max_length  = evaluation_episode_max_length
 
         if self.seed is not None:
             self.rng = np.random.default_rng(self.seed)
@@ -124,7 +124,7 @@ class TabularReinforceAgent(Agent):
 
         return discounted_reward
 
-    def train(self, number_of_episodes, checkpoint_iteration, env):
+    def train(self, number_of_episodes, checkpoint_iteration, env,print_statements = False):
 
         original_flag = self.training_flag
         self.set_training_flag(True)
@@ -167,8 +167,8 @@ class TabularReinforceAgent(Agent):
                 evaluation_rewards.append(eval_reward)
                 evaluation_durations.append(return_dict["total_steps"])
 
-                if self.print_statements:
-                    print("Current Iteration is " + str(current_iteration)+" and bext reward value seen so far is " + str(best_evaluation_reward))
+                if print_statements:
+                    print("Current Iteration is " + str(current_iteration+1)+" and bext reward value seen so far is " + str(best_evaluation_reward))
                 if eval_reward > best_evaluation_reward:
                     best_evaluation_reward = eval_reward
                     self.H_Version+=1
@@ -187,6 +187,8 @@ class TabularReinforceAgent(Agent):
         env = SnakeEnvironment() if seed is None else SnakeEnvironment(seed)
 
         self.set_training_flag(False)
+
+        env.step_limit = self.evaluation_episode_max_length
 
         for _ in range(self.evaluation_episodes):
             result = env.record_episode(agent = self)
