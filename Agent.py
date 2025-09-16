@@ -122,17 +122,16 @@ class TabularReinforceAgent(Agent):
         self.set_training_flag(True)
 
         evaluation_rewards = []
-        best_evaluation_reward =0
+
         evaluation_durations = []
         training_steps_done =0
+        best_evaluation_reward = self.evaluate()
 
         for current_iteration in range(number_of_episodes):
             return_dict = env.record_episode(agent = self)
             rewards = return_dict["rewards"]
             env_history = return_dict["total_environment_history"]
             actions = return_dict["actions_taken"]
-
-            best_evaluation_reward = self.evaluate(SnakeEnvironment)
 
 
             total_discounted_reward = self.get_discounted_return(rewards)
@@ -154,7 +153,7 @@ class TabularReinforceAgent(Agent):
                 factor = factor * self.discount_factor
 
 
-            if current_iteration % checkpoint_iteration ==0:
+            if (current_iteration+1) % checkpoint_iteration ==0:
                 eval_reward = self.evaluate(env)
                 evaluation_rewards.append(eval_reward)
                 evaluation_durations.append(return_dict["total_steps"])
@@ -167,8 +166,6 @@ class TabularReinforceAgent(Agent):
 
         self.set_training_flag(original_flag)
         return evaluation_rewards , evaluation_durations , self.discount_factor, self.learning_rate, training_steps_done, best_evaluation_reward
-
-
 
 
     def evaluate(self, seed = None):
