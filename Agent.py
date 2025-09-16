@@ -5,12 +5,19 @@ from Observer import Observer
 import os
 from joblib import dump, load
 
+from gameEnv import SnakeEnvironment
+
 """
 The movement directions, and action mappings, are:
     - 0 is UP
     - 1 is RIGHT
     - 2 is DOWN
     - 3 is LEFT
+"""
+
+"""
+NOTE: For REINFORCE Agent, during training it's important to use an env without a seed, otherwise the agent will train on the same sequence of fruit positions
+During evaluation you can input a specific seed
 """
 
 NUM_ACTIONS = 4
@@ -40,12 +47,12 @@ class RandomAgent(Agent):
         return env
 
     def act(self,env):
-        return self.rng.integers(4)
+        return self.rng.integers(NUM_ACTIONS)
 
 
 class TabularReinforceAgent(Agent):
 
-    def __init__(self,learning_rate = 0.01, discount_factor = 0.9,number_of_states = 1024 ,evaluation_episodes = 1000, REINFORCE_CHECKPOINT = r"REINFORCE_CHECKPOINTS"):
+    def __init__(self,learning_rate = 0.01, discount_factor = 0.9,number_of_states = 1024 ,evaluation_episodes = 100,seed = None,  REINFORCE_CHECKPOINT = r"REINFORCE_CHECKPOINTS"):
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.REINFORCE_CHECKPOINT = REINFORCE_CHECKPOINT
@@ -53,6 +60,12 @@ class TabularReinforceAgent(Agent):
         self.training_flag = False
         self.H_Version = None
         self.evaluation_episodes = evaluation_episodes
+        self.seed = seed
+
+        if self.seed is not None:
+            self.rng = np.random.default_rng(self.seed)
+        else:
+            self.rng = np.random.default_rng()
 
         if os.path.isdir(os.path.join(os.getcwd(), self.REINFORCE_CHECKPOINT)):
             self.set_H_table()
@@ -93,19 +106,96 @@ class TabularReinforceAgent(Agent):
         return exp_Z / exp_Z.sum()
 
 
-    def train(self, number_of_episodes):
-        pass
+    def get_discounted_return(self,rewards):
+        discounted_reward = 0
+        factor =1
 
-    def evaluate(self):
-        pass
+        for reward in rewards:
+            discounted_reward += reward * factor
+            factor = factor * self.discount_factor
+
+        return discounted_reward
+
+    def train(self, number_of_episodes, checkpoint_iteration, env):
+
+        original_flag = self.training_flag
+        self.set_training_flag(True)
+
+        evaluation_rewards = []
+        best_evaluation_reward =0
+        evaluation_durations = []
+        training_steps_done =0
+
+        for current_iteration in range(number_of_episodes):
+            return_dict = env.record_episode(agent = self)
+            rewards = return_dict["rewards"]
+            env_history = return_dict["total_environment_history"]
+            actions = return_dict["actions_taken"]
+
+            best_evaluation_reward = self.evaluate(SnakeEnvironment)
+
+
+            total_discounted_reward = self.get_discounted_return(rewards)
+            accumulated_previous_reward = 0
+            factor = 1
+
+            for index, reward in enumerate(rewards):
+                training_steps_done+= 1
+                denominator = factor if factor > 1e-12 else 1e-12
+                G_t = (total_discounted_reward-accumulated_previous_reward)/denominator
+                current_state = Observer.encode_1024(env_history[index])
+
+                probabilities = TabularReinforceAgent.softmax(self.H,current_state)
+                for current_action in range(NUM_ACTIONS):
+                    action_security = 1 if current_action == actions[index] else 0
+                    self.H[current_state][current_action] = self.H[current_state][current_action] + self.learning_rate * G_t * (action_security - probabilities[current_action])
+
+                accumulated_previous_reward += reward * factor
+                factor = factor * self.discount_factor
+
+
+            if current_iteration % checkpoint_iteration ==0:
+                eval_reward = self.evaluate(env)
+                evaluation_rewards.append(eval_reward)
+                evaluation_durations.append(return_dict["total_steps"])
+
+                if eval_reward > best_evaluation_reward:
+                    best_evaluation_reward = eval_reward
+                    self.H_Version+=1
+                    self.save_H_table()
+
+
+        self.set_training_flag(original_flag)
+        return evaluation_rewards , evaluation_durations , self.discount_factor, self.learning_rate, training_steps_done, best_evaluation_reward
+
+
+
+
+    def evaluate(self, seed = None):
+        total_return= float(0)
+        original_flag = self.training_flag
+        env = SnakeEnvironment() if seed is None else SnakeEnvironment(seed)
+
+        self.set_training_flag(False)
+
+        for _ in range(self.evaluation_episodes):
+            result = env.record_episode(agent = self)
+            total_return += float(result["total_return"])
+
+        self.set_training_flag(original_flag)
+        return total_return/self.evaluation_episodes
+
 
     def observe(self, env):
         return Observer.encode_1024(env)
 
     def act(self,env):
+        state = self.observe(env)
+        action_probabilities = TabularReinforceAgent.softmax(self.H, state)
+
         if self.training_flag:
-            pass
+            return self.rng.choice(len(action_probabilities),p = action_probabilities)
         else:
-            pass
+            return np.argmax(action_probabilities)
 
 
