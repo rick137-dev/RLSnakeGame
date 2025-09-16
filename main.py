@@ -3,9 +3,11 @@ from Visualize import *
 from gameEnv import *
 
 
-env = SnakeEnvironment(42)
-agent = TabularReinforceAgent()
+env = SnakeEnvironment()
+agent = TabularReinforceAgent(evaluation_episode_max_length = 200)
 
 
+episode = env.record_episode(agent)
+Visualizer.visualize_episode(episode)
 
 
