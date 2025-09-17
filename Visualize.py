@@ -52,7 +52,7 @@ class Visualizer:
 
 
     @staticmethod
-    def visualize_episode(episode, fps=5, save_local=False):
+    def visualize_episode(episode, fps=10, save_local=False):
         images = Visualizer.convert_to_image_list(episode)
 
         fig, ax = plt.subplots(num="Episode")
