@@ -19,7 +19,10 @@ The movement directions, and action mappings, are:
     
     
 The reward is +1 for eating fruit, -2 for death, and +alpha for every step.
-Initial position of the snake head is in the centre, and the initial direction of movement is to the right
+Initial position of the snake head is in the centre, and the initial direction of movement is to the right.
+
+The snake can make a trivial 180 degree turn killing itself immediately, for the sake of completeness. 
+
     
 """
 
@@ -44,7 +47,7 @@ BOARD_SIZE = 15
 
 class SnakeEnvironment:
 
-    def __init__(self,fruit_spawn_seed=None, step_reward = 0.01, step_limit = 2000):
+    def __init__(self,fruit_spawn_seed=None, step_reward = -0.01, step_limit = 2000):
         self.fruit_spawn_seed = fruit_spawn_seed
         if self.fruit_spawn_seed is not None:
             self.rng =  np.random.default_rng(self.fruit_spawn_seed)
@@ -110,12 +113,11 @@ class SnakeEnvironment:
         self.board[position_i][position_j] = 1
 
     def step(self, action):
-        temp_direction = self.movement_directions
 
         self.movement_directions = direction_map[action]
-        di, dj = self.movement_directions
         current_i , current_j = self.head_position
-        new_i , new_j = (current_i + di)%BOARD_SIZE , (current_j + dj)%BOARD_SIZE
+        di, dj = self.movement_directions
+        new_i, new_j = (current_i + di) % BOARD_SIZE, (current_j + dj) % BOARD_SIZE
 
 
         current_reward =0
@@ -125,46 +127,41 @@ class SnakeEnvironment:
         self_intersect = False
         truncated = False
 
-        trivial_intersect_point = None
-
-        if len(self.snake_body_deque)>1:
-            trivial_intersect_point = self.snake_body_deque[1]
-
-        if trivial_intersect_point is not None and new_i == trivial_intersect_point[0] and new_j == trivial_intersect_point[1]:
-            self.movement_directions = temp_direction
-            di, dj = self.movement_directions
-            new_i , new_j = (current_i + di)%BOARD_SIZE , (current_j + dj)%BOARD_SIZE
 
 
         if self.current_steps >=self.step_limit:
             truncated = True
 
-        if self.board[new_i][new_j] == 1:
-            #Check if intersecting tail that will not be there
-            current_tail = self.snake_body_deque[-1]
-            stepping_null_tail = new_i == current_tail[0] and new_j == current_tail[1] and self.growing==0
-            if stepping_null_tail is False:
-                current_reward -= 2
-                self_intersect = True
 
+        if truncated is False:
+            if self.board[new_i][new_j] == 1:
+                # Check if intersecting tail that will not be there
+                current_tail = self.snake_body_deque[-1]
+                stepping_null_tail = new_i == current_tail[0] and new_j == current_tail[1] and self.growing == 0
+                if stepping_null_tail is False:
+                    current_reward -= 2
+                    self_intersect = True
 
-        if self.board[new_i][new_j] == 2:
-            ate_fruit = True
+            if self.board[new_i][new_j] == 2:
+                ate_fruit = True
 
-        if self_intersect == False and truncated == False:
-            new_head_position = new_i , new_j
-            self.set_new_snake_head(new_head_position)
-
-            if ate_fruit is True:
+            if ate_fruit:
                 current_reward += 1
                 self.growing += 1
-                self.set_fruit()
 
-            if self.growing ==0:
-                self.remove_snake_end()
-            else:
-                self.growing -= 1
 
+            if self_intersect is False:
+                if self.growing == 0:
+                    self.remove_snake_end()
+                else:
+                    self.growing -= 1
+
+
+                new_head_position = new_i, new_j
+                self.set_new_snake_head(new_head_position)
+
+                if ate_fruit:
+                    self.set_fruit()
 
 
         return current_reward, self.current_steps, truncated, self_intersect, ate_fruit
