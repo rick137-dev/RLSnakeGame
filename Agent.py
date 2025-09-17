@@ -157,7 +157,7 @@ class TabularReinforceAgent(Agent):
                 for current_action in range(NUM_ACTIONS):
                     action_security = 1 if current_action == actions[index] else 0
                     self.H[current_state][current_action] = self.H[current_state][current_action] + self.learning_rate * G_t * (action_security - probabilities[current_action])
-
+                    print("Updated by: " + str(self.learning_rate * G_t * (action_security - probabilities[current_action])))
                 accumulated_previous_reward += reward * factor
                 factor = factor * self.discount_factor
 
@@ -166,13 +166,14 @@ class TabularReinforceAgent(Agent):
                 eval_reward = self.evaluate()
                 evaluation_rewards.append(eval_reward)
                 evaluation_durations.append(return_dict["total_steps"])
+                self.H_Version += 1
+                self.save_H_table()
 
                 if print_statements:
                     print("Current Iteration is " + str(current_iteration+1)+" and bext reward value seen so far is " + str(best_evaluation_reward))
                 if eval_reward > best_evaluation_reward:
                     best_evaluation_reward = eval_reward
-                    self.H_Version+=1
-                    self.save_H_table()
+
 
         end_time = time.time()
         self.set_training_flag(original_flag)
