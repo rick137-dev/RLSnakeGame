@@ -57,7 +57,7 @@ The Tabular Reinforce always has 1 H table stored on the disk, which is the best
 
 class TabularReinforceAgent(Agent):
 
-    def __init__(self,learning_rate = 0.01, discount_factor = 0.9,number_of_states = 1024 ,evaluation_episodes = 100,evaluation_episode_max_length = 2000, seed = None,  REINFORCE_CHECKPOINT = r"REINFORCE_CHECKPOINTS"):
+    def __init__(self,learning_rate = 0.05, discount_factor = 0.99,number_of_states = 1024 ,evaluation_episodes = 100,evaluation_episode_max_length = 2000, seed = None,  REINFORCE_CHECKPOINT = r"REINFORCE_CHECKPOINTS"):
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.REINFORCE_CHECKPOINT = REINFORCE_CHECKPOINT
@@ -114,15 +114,14 @@ class TabularReinforceAgent(Agent):
         return exp_Z / exp_Z.sum()
 
 
-    def get_discounted_return(self,rewards):
-        discounted_reward = 0
-        factor =1
+    def get_discounted_returns(self,rewards):
+        G = 0.0
+        discounted_return = [0.0] * len(rewards)
+        for t in range(len(rewards) - 1, -1, -1):
+            G = rewards[t] + self.discount_factor * G
+            discounted_return[t] = G
+        return discounted_return
 
-        for reward in rewards:
-            discounted_reward += reward * factor
-            factor = factor * self.discount_factor
-
-        return discounted_reward
 
     def train(self, number_of_episodes, checkpoint_iteration, env,print_statements = False):
 
@@ -142,43 +141,36 @@ class TabularReinforceAgent(Agent):
             rewards = return_dict["rewards"]
             env_history = return_dict["total_environment_history"]
             actions = return_dict["actions_taken"]
+            G = self.get_discounted_returns(rewards)
 
-            total_discounted_reward = self.get_discounted_return(rewards)
-            accumulated_previous_reward = 0
-            factor = 1
-
-            for index, reward in enumerate(rewards):
+            for index, reward_t  in enumerate(rewards):
                 training_steps_done+= 1
-                denominator = factor if factor > 1e-12 else 1e-12
-                G_t = (total_discounted_reward-accumulated_previous_reward)/denominator
+
+                G_t = G[index]
                 current_state = Observer.encode_1024(env_history[index])
 
                 probabilities = TabularReinforceAgent.softmax(self.H,current_state)
                 for current_action in range(NUM_ACTIONS):
                     action_security = 1 if current_action == actions[index] else 0
                     self.H[current_state][current_action] = self.H[current_state][current_action] + self.learning_rate * G_t * (action_security - probabilities[current_action])
-                    print("Updated by: " + str(self.learning_rate * G_t * (action_security - probabilities[current_action])))
-                accumulated_previous_reward += reward * factor
-                factor = factor * self.discount_factor
-
 
             if (current_iteration+1) % checkpoint_iteration ==0:
                 eval_reward = self.evaluate()
                 evaluation_rewards.append(eval_reward)
                 evaluation_durations.append(return_dict["total_steps"])
-                self.H_Version += 1
-                self.save_H_table()
 
                 if print_statements:
                     print("Current Iteration is " + str(current_iteration+1)+" and bext reward value seen so far is " + str(best_evaluation_reward))
                 if eval_reward > best_evaluation_reward:
                     best_evaluation_reward = eval_reward
+                    self.H_Version += 1
+                    self.save_H_table()
 
 
         end_time = time.time()
         self.set_training_flag(original_flag)
         time_took = end_time - start_time
-        print("Training completed, current iteration of H is " + str(self.H_Version) + " and the program took "+str(time_took)+ " seconds to run")
+        print("Training completed, current iteration of H is " + str(self.H_Version) + " and the program took "+str(time_took)+ " seconds to run. Best reward seen is "+str(best_evaluation_reward))
         return evaluation_rewards , evaluation_durations , self.discount_factor, self.learning_rate, training_steps_done, best_evaluation_reward
 
 

@@ -47,7 +47,7 @@ BOARD_SIZE = 15
 
 class SnakeEnvironment:
 
-    def __init__(self,fruit_spawn_seed=None, step_reward = -0.01, step_limit = 2000):
+    def __init__(self,fruit_spawn_seed=None, step_reward = -0.001, step_limit = 400):
         self.fruit_spawn_seed = fruit_spawn_seed
         if self.fruit_spawn_seed is not None:
             self.rng =  np.random.default_rng(self.fruit_spawn_seed)

@@ -4,9 +4,9 @@ from gameEnv import *
 
 
 env = SnakeEnvironment()
-agent = TabularReinforceAgent(evaluation_episode_max_length = 200)
+agent = TabularReinforceAgent(evaluation_episode_max_length = 400)
 
-agent.train(500,100,env,True)
+#agent.train(3000,100,env,False)
 
 
 episode = env.record_episode(agent)
