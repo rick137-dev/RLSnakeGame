@@ -142,6 +142,8 @@ class TabularReinforceAgent(Agent):
             env_history = return_dict["total_environment_history"]
             actions = return_dict["actions_taken"]
             G = self.get_discounted_returns(rewards)
+            G = np.array(G, dtype=np.float64)
+            G = (G - G.mean()) / (G.std() + 1e-8)
 
             for index, reward_t  in enumerate(rewards):
                 training_steps_done+= 1
@@ -159,12 +161,14 @@ class TabularReinforceAgent(Agent):
                 evaluation_rewards.append(eval_reward)
                 evaluation_durations.append(return_dict["total_steps"])
 
-                if print_statements:
-                    print("Current Iteration is " + str(current_iteration+1)+" and bext reward value seen so far is " + str(best_evaluation_reward))
+
                 if eval_reward > best_evaluation_reward:
                     best_evaluation_reward = eval_reward
                     self.H_Version += 1
                     self.save_H_table()
+
+                if print_statements:
+                    print("Current Iteration is " + str(current_iteration+1)+". The current run evaluation reward is "+str(eval_reward) +" and bext reward value seen so far is " + str(best_evaluation_reward))
 
 
         end_time = time.time()
