@@ -20,6 +20,30 @@ class Observer:
     """
 
     @staticmethod
+    def torus_delta(size, a, b):
+        d = (b - a) % size
+        if d > size // 2:
+            d -= size
+        return d
+
+
+    @staticmethod
+    def get_relative_quadrant(size, head_pos, target_pos):
+        hi, hj = head_pos
+        ti, tj = target_pos
+        di = Observer.torus_delta(size, hi, ti)
+        dj = Observer.torus_delta(size, hj, tj)
+
+        if di < 0 and dj < 0:
+            return 0
+        elif di < 0 and dj >= 0:
+            return 1
+        elif di >= 0 and dj >= 0:
+            return 2
+        else:
+            return 3
+
+    @staticmethod
     def get_quadrant_bit(size, position):
         pos_i , pos_j = position
 
@@ -43,7 +67,9 @@ class Observer:
         if env.growing >0:
             growth_bit = 1
 
-        fruit_quadrant_bit = Observer.get_quadrant_bit(env.board_size, env.fruit_position)
+        fruit_quadrant_bit = Observer.get_relative_quadrant(
+            env.board_size, env.head_position, env.fruit_position
+        )
         head_position_bit = Observer.get_quadrant_bit(env.board_size, env.head_position)
 
         if fruit_quadrant_bit == -1 or head_position_bit == -1:
