@@ -95,7 +95,7 @@ class TabularReinforceAgent(Agent):
         new_filename = "H_" + str(self.H_Version) + ".joblib"
         new_filename = os.path.join(self.REINFORCE_CHECKPOINT,new_filename)
         dump(self.H,new_filename)
-        dump(self.H,new_filename)
+
 
     def set_H_table(self):
         if os.path.isdir(os.path.join(os.getcwd(), self.REINFORCE_CHECKPOINT)):
