@@ -47,7 +47,7 @@ BOARD_SIZE = 15
 
 class SnakeEnvironment:
 
-    def __init__(self,fruit_spawn_seed=None, step_reward = -0.001, step_limit = 1000):
+    def __init__(self,fruit_spawn_seed=None, step_reward = -0.001, step_limit = 2000):
         self.fruit_spawn_seed = fruit_spawn_seed
         if self.fruit_spawn_seed is not None:
             self.rng =  np.random.default_rng(self.fruit_spawn_seed)
@@ -111,6 +111,9 @@ class SnakeEnvironment:
         position_i , position_j = new_head_position
         self.snake_body_deque.appendleft(new_head_position)
         self.board[position_i][position_j] = 1
+
+    def set_max_step_limit(self,limit):
+        self.step_limit = limit
 
     def step(self, action):
 
