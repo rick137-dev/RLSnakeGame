@@ -115,6 +115,9 @@ class SnakeEnvironment:
     def set_max_step_limit(self,limit):
         self.step_limit = limit
 
+    def get_max_step_limit(self):
+        return self.step_limit
+
     def step(self, action):
 
         self.movement_directions = direction_map[action]
