@@ -1,5 +1,5 @@
 
-from Agent import Agent
+from Agent import Agent, NUM_ACTIONS
 from Observer import Observer
 import os
 from joblib import dump, load
