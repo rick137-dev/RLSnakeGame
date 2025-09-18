@@ -1,4 +1,4 @@
-from Agent import RandomAgent, TabularReinforceAgent
+from TabularReinforceAgent import TabularReinforceAgent
 from Visualize import *
 from gameEnv import *
 
