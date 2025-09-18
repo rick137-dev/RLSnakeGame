@@ -209,3 +209,20 @@ class TabularReinforceAgent(Agent):
 
 
 
+class TabularQLearning(Agent):
+    def __init__(self,learning_rate = 0.05, discount_factor = 0.99,number_of_states = 1024 ,evaluation_episodes = 100,evaluation_episode_max_length = 2000, seed = None,  TABULAR_Q_CHECKPOINT = r"TABULAR_Q_CHECKPOINT"):
+        self.learning_rate = learning_rate
+        self.discount_factor = discount_factor
+        self.number_of_states = number_of_states
+        self.evaluation_episodes = evaluation_episodes
+        self.evaluation_episode_max_length = evaluation_episode_max_length
+        self.seed = seed
+        self.TABULAR_Q_CHECKPOINT = TABULAR_Q_CHECKPOINT
+
+
+    def observe(self, env):
+        return Observer.encode_1024(env)
+
+    def act(self,env):
+        pass
+
