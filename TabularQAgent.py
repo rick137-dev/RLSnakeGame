@@ -74,6 +74,7 @@ class TabularQLearning(Agent):
         env = SnakeEnvironment() if seed is None else SnakeEnvironment(seed)
 
         env.set_max_step_limit(self.evaluation_episode_max_length)
+
         eval_returns = []
 
         for _ in range(self.evaluation_episodes):
@@ -81,15 +82,13 @@ class TabularQLearning(Agent):
             total_return += float(return_dict["total_return"])
             eval_returns.append(float(return_dict["total_return"]))
 
-
         self.set_training_flag(original_flag)
         return total_return/self.evaluation_episodes , eval_returns
 
 
-    def train(self,training_episodes, checkpoint_iteration, env:SnakeEnvironment, max_evaluation_episodes,print_statement = False):
+    def train(self,training_episodes, checkpoint_iteration, env, print_statement = False):
         original_flag = self.training_flag
         self.set_training_flag(True)
-
 
 
         for iteration in range(training_episodes):
@@ -98,11 +97,6 @@ class TabularQLearning(Agent):
 
             if (iteration+1)%checkpoint_iteration ==0:
                 print("")
-                current_step_limit = env.get_max_step_limit()
-                env.set_max_step_limit(max_evaluation_episodes)
-
-
-                env.set_max_step_limit(current_step_limit)
 
 
         self.set_training_flag(original_flag)
