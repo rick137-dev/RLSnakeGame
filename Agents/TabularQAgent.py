@@ -1,9 +1,8 @@
-from Agent import *
+from Agents.Agent import *
 from Observer import Observer
 import os
 from joblib import dump, load
 from gameEnv import SnakeEnvironment
-import time
 import re
 import numpy as np
 
