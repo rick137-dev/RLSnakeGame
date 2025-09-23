@@ -7,8 +7,8 @@ import time
 import re
 import numpy as np
 
-class TabularQLearning(Agent):
-    def __init__(self,learning_rate = 0.05, discount_factor = 0.99,number_of_states = 1024 ,evaluation_episodes = 100,evaluation_episode_max_length = 2000, seed = None,training_seed = None,  TABULAR_Q_CHECKPOINT = r"TABULAR_Q_CHECKPOINT"):
+class TabularQAgent(Agent):
+    def __init__(self,learning_rate = 0.05, discount_factor = 0.99,number_of_states = 1024 ,evaluation_episodes = 100,evaluation_episode_max_length = 2000, seed = None,training_seed = None,  TABULAR_Q_CHECKPOINT = r"TABULAR_Q_CHECKPOINTS"):
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.number_of_states = number_of_states
