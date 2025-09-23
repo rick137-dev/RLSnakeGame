@@ -90,7 +90,7 @@ class TabularQLearning(Agent):
         return total_return/self.evaluation_episodes , eval_returns
 
 
-    def train(self,training_episodes, checkpoint_iteration, env, print_statement = False):
+    def train(self,training_episodes, checkpoint_iteration, env, print_statement = False, epsilon_decay = True):
         original_flag = self.training_flag
         self.set_training_flag(True)
         max_evaluation,_ = self.evaluate()
@@ -118,6 +118,10 @@ class TabularQLearning(Agent):
                                 step_reward + self.discount_factor * self.max_Q(next_state) - self.Q[state, action])
 
             episode_rewards.append(episode_reward)
+
+            if epsilon_decay:
+                self.epsilon = max(0.01, self.epsilon * 0.995)
+
             if (iteration+1)%checkpoint_iteration ==0:
                 if print_statement:
                     print("The current iteration is "+str(iteration) + " and the current episode reward is " + str(episode_reward) +" and the best evaluation rewward seen is "+str(max_evaluation))
