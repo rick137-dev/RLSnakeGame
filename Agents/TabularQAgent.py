@@ -101,8 +101,9 @@ class TabularQAgent(Agent):
             intersected = False
             env.reset()
             episode_reward = float(0)
+            episode_step =0
 
-            while truncated is False and intersected is False:
+            while truncated is False and intersected is False and episode_step <= env.step_limit:
                 state = self.observe(env)
                 action = self.act(env)
                 step_reward, _, truncated, intersected, _ = env.step(action)
@@ -116,6 +117,7 @@ class TabularQAgent(Agent):
                     self.Q[state, action] = self.Q[state, action] + self.learning_rate * (
                                 step_reward + self.discount_factor * self.max_Q(next_state) - self.Q[state, action])
 
+                episode_step +=1
             episode_rewards.append(episode_reward)
 
             if epsilon_decay:
